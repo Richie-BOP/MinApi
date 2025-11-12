@@ -1,0 +1,12 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.0.0">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>9b5d3d3d-b346-4375-8f83-445dc55ae0ec</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MinApiDemo.Api\MinApiDemo.Api.csproj" />
+  </ItemGroup>
+
+</Project>
