@@ -1,5 +1,9 @@
 using Carter;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +12,35 @@ builder.AddServiceDefaults();
 
 builder.Services.AddCarter();
 
-builder.Services.AddProblemDetails();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.SerializerOptions.WriteIndented = true;
+    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+});
+
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = (context) =>
+    {
+        if (context.ProblemDetails is HttpValidationProblemDetails validationProblemDetails)
+        {
+            context.ProblemDetails.Detail = $"Error(s) occrred: {validationProblemDetails.Errors.Values.Sum(x => x.Length)}";
+            
+            var namingPolicy = context.HttpContext.RequestServices.GetRequiredService<IOptions<JsonOptions>>()
+                .Value.JsonSerializerOptions.PropertyNamingPolicy;
+            
+            if (namingPolicy is not null)
+            {
+                validationProblemDetails.Errors = validationProblemDetails.Errors
+                    .ToDictionary(
+                        kvp => namingPolicy.ConvertName(kvp.Key),
+                        kvp => kvp.Value
+                    );
+            }
+        }
+    };
+});
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

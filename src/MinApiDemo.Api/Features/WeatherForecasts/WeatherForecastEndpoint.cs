@@ -31,7 +31,8 @@ public class WeatherForecastEndpoint : ICarterModule
                     summaries[Random.Shared.Next(summaries.Length)]
                 ))
                 .ToArray();
-            return forecast;
+
+            return TypedResults.Ok(forecast);
         })        
         .WithTags("Weather Forecast")
         .WithName("GetWeatherForecast")

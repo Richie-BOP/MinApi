@@ -1,0 +1,11 @@
+@OpenApi_HostAddress = https://minapidemo-api-minapi.dev.localhost:7097
+
+GET {{OpenApi_HostAddress}}/openapi/v1.json
+Accept: application/json
+
+###
+
+GET {{OpenApi_HostAddress}}/openapi/v1.yaml
+Accept: text/plain+yaml
+
+###

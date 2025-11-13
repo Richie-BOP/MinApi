@@ -1,0 +1,6 @@
+@WeatherForecast_HostAddress = https://minapidemo-api-minapi.dev.localhost:7097
+
+GET {{WeatherForecast_HostAddress}}/api/weatherforcasts/current
+Accept: application/json
+
+###
