@@ -10,42 +10,50 @@ internal static class ResourceBuilderExtensions
     internal static IResourceBuilder<T> WithOpenApi<T>(this IResourceBuilder<T> builder)
         where T : IResourceWithEndpoints
     {
-        return builder.WithOpenApiDocs(
-            "open-api-doc", "OpenAPI document",
-            0, "/openapi/v1.json",
-            "DocumentChevronDouble", IconVariant.Regular);
+        return builder.WithOpenApiCommand(
+            "open-api-doc",
+            "OpenAPI document",
+            "openapi/v1.json",
+            "DocumentChevronDouble",
+            IconVariant.Regular);
     }
 
     internal static IResourceBuilder<T> WithSwaggerUI<T>(this IResourceBuilder<T> builder)
         where T : IResourceWithEndpoints
     {
-        return builder.WithOpenApiDocs("swagger-ui-docs", "Swagger UI Docs",
-            0, "/swagger",
-            "Document", IconVariant.Filled);
+        return builder.WithOpenApiCommand(
+            "swagger-ui-docs", 
+            "Swagger UI Docs",
+            "swagger",
+            "Document", 
+            IconVariant.Filled);
     }
 
     internal static IResourceBuilder<T> WithReDoc<T>(this IResourceBuilder<T> builder)
         where T : IResourceWithEndpoints
     {
-        return builder.WithOpenApiDocs(
-            "redocs-docs", "ReDocs UI Docs",
-            0, "/api-docs",
-            "Document", IconVariant.Filled);
+        return builder.WithOpenApiCommand(
+            "redocs-docs", 
+            "ReDocs UI Docs",
+            "api-docs",
+            "Document", 
+            IconVariant.Filled);
     }
 
     internal static IResourceBuilder<T> WithScalar<T>(this IResourceBuilder<T> builder)
         where T : IResourceWithEndpoints
     {
-        return builder.WithOpenApiDocs(
-            "scalar-docs", "Scalar UI Docs",
-            0, "/scalar",
-            "Document", IconVariant.Filled);
+        return builder.WithOpenApiCommand(
+            "scalar-docs", 
+            "Scalar UI Docs",
+            "scalar",
+            "Document", 
+            IconVariant.Filled);
     }
 
-    private static IResourceBuilder<T> WithOpenApiDocs<T>(this IResourceBuilder<T> builder,
+    private static IResourceBuilder<T> WithOpenApiCommand<T>(this IResourceBuilder<T> builder,
         string name,
         string displayName,
-        int port,
         string path,
         string iconName,
         IconVariant iconVariant
@@ -59,18 +67,11 @@ internal static class ResourceBuilderExtensions
         {
             try
             {
-                var endpoint = builder.GetEndpoint("https");
-
-                var url = $"{endpoint.Url}{path}";
-
-                if (port != 0)
-                {
-                    url = $"{endpoint.Scheme}://{endpoint.Host}:{port}{path}";
-                }
+                var url = GetResourceUrl(builder, path);
 
                 await Task.Run(() =>
                 {
-                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    Process.Start(new ProcessStartInfo(url.AbsoluteUri) { UseShellExecute = true });
                 });
 
                 return new ExecuteCommandResult { Success = true };
@@ -91,7 +92,16 @@ internal static class ResourceBuilderExtensions
             },
             IconName = iconName,
             IconVariant = iconVariant
-        }
-        );
+        });
+    }
+
+    private static Uri GetResourceUrl<T>(IResourceBuilder<T> builder, string path)
+        where T : IResourceWithEndpoints
+    {
+        builder.Resource.TryGetUrls(out IEnumerable<ResourceUrlAnnotation>? urls);
+
+        var baseUrl = urls?.FirstOrDefault()?.Url ?? builder.Resource.GetEndpoint("https").Url;
+
+        return new Uri(new Uri(baseUrl), path);
     }
 }
